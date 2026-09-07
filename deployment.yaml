@@ -60,7 +60,7 @@ spec:
         fsGroup: 65534
       containers:
         - name: tracer-bullet
-          image: ghcr.io/paruff/tracer-bullet:v0.1.0
+          image: ghcr.io/paruff/tracer-bullet:95a552d
           imagePullPolicy: Always
           ports:
             - name: http
