@@ -18,18 +18,31 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 # OR OTHER DEALINGS IN THE SOFTWARE.
 
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-namespace: fawkes
-
-resources:
-  - serviceaccount.yaml
-  - deployment.yaml
-  - service.yaml
-  - ingress.yaml
-  - servicemonitor.yaml
-
-commonLabels:
-  app.kubernetes.io/part-of: fawkes
-  app.kubernetes.io/managed-by: argocd
+# tracer-bullet exposes Prometheus-format metrics via a pull-based /metrics
+# endpoint (FastAPI + prometheus_client's make_asgi_app(), see app/main.py) on
+# the same port as the app itself (Service port "http", 80 -> targetPort http).
+# Nothing was scraping it: the platform's OTel Collector only runs an OTLP
+# receiver for its metrics pipeline (push-based), not a Prometheus scrape
+# receiver, and no ServiceMonitor existed for this service. The target
+# Prometheus's serviceMonitorSelector/serviceMonitorNamespaceSelector are both
+# {} (match everything, confirmed live), so this needs no special labels to
+# be picked up.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: tracer-bullet
+  namespace: fawkes
+  labels:
+    app: tracer-bullet
+    app.kubernetes.io/name: tracer-bullet
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: fawkes
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    matchLabels:
+      app: tracer-bullet
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
