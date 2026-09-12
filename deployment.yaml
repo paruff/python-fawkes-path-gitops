@@ -81,6 +81,11 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8000"
         prometheus.io/path: "/metrics"
+        # Forces a new revision/ReplicaSet so Argo Rollouts creates a fresh
+        # AnalysisRun with the corrected prometheus-endpoint arg, instead of
+        # retrying the stale AnalysisRun created before that fix landed
+        # (fawkes#2066). Safe to remove/update on any future real change.
+        kubernetes.io/restartedAt: "2026-09-12T18:35:00Z"
     spec:
       # ghcr.io/paruff/python-fawkes-path is currently built amd64-only (the
       # in-cluster Tekton golden-path pipeline's Kaniko build task doesn't
