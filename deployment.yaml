@@ -100,7 +100,7 @@ spec:
         fsGroup: 65534
       containers:
         - name: python-fawkes-path
-          image: ghcr.io/paruff/python-fawkes-path:95a552d
+          image: ghcr.io/paruff/python-fawkes-path:2d97aef
           imagePullPolicy: Always
           ports:
             - name: http
