@@ -18,7 +18,7 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 # OR OTHER DEALINGS IN THE SOFTWARE.
 
-# tracer-bullet exposes Prometheus-format metrics via a pull-based /metrics
+# python-fawkes-path exposes Prometheus-format metrics via a pull-based /metrics
 # endpoint (FastAPI + prometheus_client's make_asgi_app(), see app/main.py) on
 # the same port as the app itself (Service port "http", 80 -> targetPort http).
 # Nothing was scraping it: the platform's OTel Collector only runs an OTLP
@@ -30,18 +30,18 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: tracer-bullet
+  name: python-fawkes-path
   namespace: fawkes
   labels:
-    app: tracer-bullet
-    app.kubernetes.io/name: tracer-bullet
+    app: python-fawkes-path
+    app.kubernetes.io/name: python-fawkes-path
     app.kubernetes.io/component: backend
     app.kubernetes.io/part-of: fawkes
     app.kubernetes.io/managed-by: argocd
 spec:
   selector:
     matchLabels:
-      app: tracer-bullet
+      app: python-fawkes-path
   endpoints:
     - port: http
       path: /metrics
