@@ -21,11 +21,11 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: tracer-bullet
+  name: python-fawkes-path
   namespace: fawkes
   labels:
-    app: tracer-bullet
-    app.kubernetes.io/name: tracer-bullet
+    app: python-fawkes-path
+    app.kubernetes.io/name: python-fawkes-path
     app.kubernetes.io/component: backend
     app.kubernetes.io/part-of: fawkes
     app.kubernetes.io/managed-by: argocd
@@ -34,13 +34,13 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: tracer-bullet.fawkes.local
+    - host: python-fawkes-path.fawkes.local
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: tracer-bullet
+                name: python-fawkes-path
                 port:
                   number: 80

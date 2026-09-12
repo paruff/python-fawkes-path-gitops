@@ -20,8 +20,8 @@
 
 # Converted from Deployment to Rollout (Phase 2, #1805) to deploy via
 # canary with automated rollback, per docs/DEPLOYMENT_STRATEGY.md's
-# Canary-over-Blue/Green decision and the tracer-bullet-canary-success
-# AnalysisTemplate (platform/apps/tracer-bullet/tracer-bullet-analysis-template.yaml
+# Canary-over-Blue/Green decision and the python-fawkes-path-canary-success
+# AnalysisTemplate (platform/apps/python-fawkes-path/python-fawkes-path-analysis-template.yaml
 # in the fawkes repo, both merged in #1805's earlier batch).
 #
 # Basic (replica-ratio) canary, no trafficRouting plugin: this cluster has
@@ -37,12 +37,12 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: tracer-bullet
+  name: python-fawkes-path
   namespace: fawkes
   labels:
-    app: tracer-bullet
+    app: python-fawkes-path
     version: v0.1.0
-    app.kubernetes.io/name: tracer-bullet
+    app.kubernetes.io/name: python-fawkes-path
     app.kubernetes.io/version: v0.1.0
     app.kubernetes.io/component: backend
     app.kubernetes.io/part-of: fawkes
@@ -52,15 +52,15 @@ spec:
   replicas: 2
   selector:
     matchLabels:
-      app: tracer-bullet
+      app: python-fawkes-path
   strategy:
     canary:
       analysis:
         templates:
-          - templateName: tracer-bullet-canary-success
+          - templateName: python-fawkes-path-canary-success
         args:
           - name: service-name
-            value: tracer-bullet
+            value: python-fawkes-path
           - name: namespace
             value: fawkes
       steps:
@@ -71,8 +71,8 @@ spec:
   template:
     metadata:
       labels:
-        app: tracer-bullet
-        app.kubernetes.io/name: tracer-bullet
+        app: python-fawkes-path
+        app.kubernetes.io/name: python-fawkes-path
         app.kubernetes.io/version: v0.1.0
         app.kubernetes.io/component: backend
         app.kubernetes.io/part-of: fawkes
@@ -82,7 +82,7 @@ spec:
         prometheus.io/port: "8000"
         prometheus.io/path: "/metrics"
     spec:
-      # ghcr.io/paruff/tracer-bullet is currently built amd64-only (the
+      # ghcr.io/paruff/python-fawkes-path is currently built amd64-only (the
       # in-cluster Tekton golden-path pipeline's Kaniko build task doesn't
       # produce a true multi-arch manifest - see platform/apps/tekton/
       # golden-path-pipeline.yaml in fawkes for the known gap). Without
@@ -91,7 +91,7 @@ spec:
       # multi-arch image (tracked as a follow-up); remove this once it does.
       nodeSelector:
         kubernetes.io/arch: amd64
-      serviceAccountName: tracer-bullet
+      serviceAccountName: python-fawkes-path
       automountServiceAccountToken: true
       securityContext:
         runAsNonRoot: true
@@ -99,8 +99,8 @@ spec:
         runAsGroup: 65534
         fsGroup: 65534
       containers:
-        - name: tracer-bullet
-          image: ghcr.io/paruff/tracer-bullet:95a552d
+        - name: python-fawkes-path
+          image: ghcr.io/paruff/python-fawkes-path:95a552d
           imagePullPolicy: Always
           ports:
             - name: http
@@ -112,7 +112,7 @@ spec:
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: "otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4317"
             - name: OTEL_SERVICE_NAME
-              value: "tracer-bullet"
+              value: "python-fawkes-path"
             - name: DEPLOYMENT_ENVIRONMENT
               value: "development"
           resources:
