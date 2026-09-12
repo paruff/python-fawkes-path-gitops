@@ -51,6 +51,15 @@ spec:
         prometheus.io/port: "8000"
         prometheus.io/path: "/metrics"
     spec:
+      # ghcr.io/paruff/tracer-bullet is currently built amd64-only (the
+      # in-cluster Tekton golden-path pipeline's Kaniko build task doesn't
+      # produce a true multi-arch manifest - see platform/apps/tekton/
+      # golden-path-pipeline.yaml in fawkes for the known gap). Without
+      # this, pods land on any node including arm64 ones and crash with
+      # "exec format error". Stopgap until the pipeline produces a real
+      # multi-arch image (tracked as a follow-up); remove this once it does.
+      nodeSelector:
+        kubernetes.io/arch: amd64
       serviceAccountName: tracer-bullet
       automountServiceAccountToken: true
       securityContext:
