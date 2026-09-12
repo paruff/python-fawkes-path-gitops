@@ -18,8 +18,24 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 # OR OTHER DEALINGS IN THE SOFTWARE.
 
-apiVersion: apps/v1
-kind: Deployment
+# Converted from Deployment to Rollout (Phase 2, #1805) to deploy via
+# canary with automated rollback, per docs/DEPLOYMENT_STRATEGY.md's
+# Canary-over-Blue/Green decision and the tracer-bullet-canary-success
+# AnalysisTemplate (platform/apps/tracer-bullet/tracer-bullet-analysis-template.yaml
+# in the fawkes repo, both merged in #1805's earlier batch).
+#
+# Basic (replica-ratio) canary, no trafficRouting plugin: this cluster has
+# no service-mesh/ingress-controller wired for weighted traffic splitting
+# to Argo Rollouts yet, so the existing single Service continues to select
+# both stable and canary ReplicaSets by label - traffic splits
+# approximately by replica count ratio, not exact request-level weighting.
+# At only 2 replicas, 10%/50%/100% steps (docs/DEPLOYMENT_STRATEGY.md's
+# aspirational figures) aren't meaningfully distinct - ceil(0.1*2)=1 canary
+# replica is already a 50% split. Using 50%/100% steps instead, which ARE
+# achievable exactly at this replica count. Revisit with finer steps once
+# replica count or a traffic-routing plugin makes 10% actually mean 10%.
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: tracer-bullet
   namespace: fawkes
@@ -37,6 +53,21 @@ spec:
   selector:
     matchLabels:
       app: tracer-bullet
+  strategy:
+    canary:
+      analysis:
+        templates:
+          - templateName: tracer-bullet-canary-success
+        args:
+          - name: service-name
+            value: tracer-bullet
+          - name: namespace
+            value: fawkes
+      steps:
+        - setWeight: 50
+        - pause:
+            duration: 60s
+        - setWeight: 100
   template:
     metadata:
       labels:
